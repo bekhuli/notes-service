@@ -1,0 +1,53 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15
+    container_name: notes-db
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: notes_service
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.migrate
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://root:1234@db:5432/notes_service?sslmode=disable
+    restart: "no"
+
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.auth
+    depends_on:
+      - db
+    ports:
+      - "50051:50051"
+    environment:
+      DATABASE_URL: postgres://root:1234@db:5432/notes_service?sslmode=disable
+      JWT_SECRET: "supersecret"
+
+  note-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.note
+    depends_on:
+      - db
+    ports:
+      - "50052:50052"
+    environment:
+      DATABASE_URL: postgres://root:1234@db:5432/notes_service?sslmode=disable
+      AUTH_ADDR: auth-service:50051
+      JWT_SECRET: "supersecret"
+
+volumes:
+  db_data:
