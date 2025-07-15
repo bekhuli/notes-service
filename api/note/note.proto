@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+option go_package = "github.com/bekhuli/notes-service/api/note";
+
+package note;
+
+service NoteService {
+  rpc CreateNote(CreateNoteRequest) returns (NoteResponse);
+  rpc GetNotes(UserIDRequest) returns (stream NoteResponse);
+  rpc UpdateNote(UpdateNoteRequest) returns (NoteResponse);
+  rpc DeleteNote(NoteIDRequest) returns (Empty);
+}
+
+message CreateNoteRequest {
+  int64 user_id = 1;
+  string title = 2;
+  string content = 3;
+}
+
+message UpdateNoteRequest {
+  int64 note_id = 1;
+  string title = 2;
+  string content = 3;
+}
+
+message NoteIDRequest {
+  int64 note_id = 1;
+}
+
+message UserIDRequest {
+  int64 user_id = 1;
+}
+
+message NoteResponse {
+  int64 id = 1;
+  int64 user_id = 2;
+  string title = 3;
+  string content = 4;
+}
+
+message Empty {}
